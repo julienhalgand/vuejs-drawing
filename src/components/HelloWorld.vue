@@ -1,35 +1,18 @@
 <template>
-  <div class="hello">
+  <div class="canvas">
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router" target="_blank" rel="noopener">router</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-unit-mocha" target="_blank" rel="noopener">unit-mocha</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank" rel="noopener">typescript</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <p><a href="https://codesource.io/build-a-drawing-app-with-and-vuejs-html5-canvas/" target="_blank" rel="noopener">Lien vers le tutoriel</a></p>
+    <canvas
+      class="mycanvas"
+      id="canvas"
+      :width="width"
+      :height="height"
+      @mousedown.left="startPainting"
+      @mouseup.left="finishedPainting"
+      @mousemove="draw"
+      @mouseover="finishedPainting"
+    >
+    </canvas>
   </div>
 </template>
 
@@ -43,23 +26,67 @@ import { Options, Vue } from 'vue-class-component';
 })
 export default class HelloWorld extends Vue {
   msg!: string
+
+  canvas!: HTMLCanvasElement
+  ctx!: CanvasRenderingContext2D
+  width: number = window.innerWidth-40
+  height: number = window.innerHeight/2
+
+  painting = false
+
+  private setWidth(): void {
+    this.width = document.documentElement.clientWidth-40;
+  }
+
+  private setHeight() {
+    this.height = document.documentElement.clientHeight/2;
+  }
+
+  private setDimensions() {
+    this.setWidth()
+    this.setHeight()
+  }
+
+  private startPainting(e: PointerEvent) {
+    this.painting = true
+    this.draw(e)
+  }
+  private finishedPainting() {
+    this.painting = false
+    this.ctx.beginPath()
+  }
+  private draw(e: PointerEvent) {
+    if (this.painting) {
+      console.log("draw")
+      this.ctx.lineWidth = 10;
+      this.ctx.lineCap ="round"
+      this.ctx.lineTo(e.clientX-20,e.clientY-200)
+      this.ctx.stroke()
+
+      this.ctx.beginPath()
+      this.ctx.moveTo(e.clientX-20,e.clientY-200)
+    }
+  }
+  
+  mounted() {
+    this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+
+    window.addEventListener('resize', this.setDimensions);
+  } 
+  
+  unmounted() {
+    window.removeEventListener('resize', this.setDimensions);
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+  .mycanvas {
+    border:2px solid #00FFF7;
+    border-radius: 0.6rem;
+    display: block;
+    margin: 0 auto;
+  }
 </style>
